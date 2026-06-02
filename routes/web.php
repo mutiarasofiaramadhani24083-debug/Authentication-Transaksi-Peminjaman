@@ -1,20 +1,28 @@
 <?php
-
+ 
 use Illuminate\Support\Facades\Route;
-use App\Models\Buku;
-use App\Models\Anggota;
-
-// ─────────────────────────────────────────────
-//  Route utama aplikasi
-// ─────────────────────────────────────────────
+use App\Http\Controllers\BukuController;
+use App\Http\Controllers\AnggotaController;
+use App\Http\Controllers\DashboardController;
+ 
 Route::get('/', function () {
-    return view('welcome');
-});
+    return view('home');
+})->name('home');
 
-// ─────────────────────────────────────────────
-//  Tugas 2C – Testing Accessor & Scope
-//  URL: /test-accessor-scope
-// ─────────────────────────────────────────────
+// Tambahkan rute ini untuk Dashboard
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+ 
+// 👇 TAMBAHIN ROUTE SEARCH DI SINI 👇
+Route::get('/buku/search', [BukuController::class, 'search'])->name('buku.search');
+
+// Resource route untuk Buku
+Route::resource('buku', BukuController::class);
+ 
+Route::get('/buku/kategori/{kategori}', [BukuController::class, 'filterKategori'])
+     ->name('buku.kategori');
+ 
+Route::resource('anggota', AnggotaController::class);
+
 Route::get('/test-accessor-scope', function () {
 
     // ── Header halaman ────────────────────────

@@ -1,70 +1,138 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Anggota</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Detail Profil Anggota</h4>
+@extends('layouts.app')
+ 
+@section('title', $anggota->nama)
+ 
+@section('content')
+<div class="row">
+    <div class="col-12 mb-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('anggota.index') }}">Anggota</a></li>
+                <li class="breadcrumb-item active">{{ $anggota->nama }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+ 
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-person"></i>
+                    Detail Anggota
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    @if ($anggota->jenis_kelamin == 'Laki-laki')
+                        <i class="bi bi-person-circle text-primary" style="font-size: 5rem;"></i>
+                    @else
+                        <i class="bi bi-person-circle text-danger" style="font-size: 5rem;"></i>
+                    @endif
+                    <h3 class="mt-2">{{ $anggota->nama }}</h3>
+                    @if ($anggota->status == 'Aktif')
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle"></i> Anggota Aktif
+                        </span>
+                    @else
+                        <span class="badge bg-secondary">
+                            <i class="bi bi-x-circle"></i> Nonaktif
+                        </span>
+                    @endif
                 </div>
-                <div class="card-body">
-                    <table class="table table-borderless">
-                        <tr>
-                            <th style="width: 35%;">Kode Anggota</th>
-                            <td style="width: 5%;">:</td>
-                            <td><strong>{{ $anggota['kode'] }}</strong></td>
-                        </tr>
-                        <tr>
-                            <th>Nama Lengkap</th>
-                            <td>:</td>
-                            <td>{{ $anggota['nama'] }}</td>
-                        </tr>
-                        <tr>
-                            <th>Email</th>
-                            <td>:</td>
-                            <td>{{ $anggota['email'] }}</td>
-                        </tr>
-                        <tr>
-                            <th>Telepon</th>
-                            <td>:</td>
-                            <td>{{ $anggota['telepon'] }}</td>
-                        </tr>
-                        <tr>
-                            <th>Alamat</th>
-                            <td>:</td>
-                            <td>{{ $anggota['alamat'] }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status</th>
-                            <td>:</td>
-                            <td>
-                                @if ($anggota['status'] == 'Aktif')
-                                    <span class="badge bg-success fs-6">{{ $anggota['status'] }}</span>
-                                @else
-                                    <span class="badge bg-danger fs-6">{{ $anggota['status'] }}</span>
-                                @endif
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="card-footer text-end bg-white">
-                    <a href="{{ url('/anggota') }}" class="btn btn-secondary">
-                        &larr; Kembali ke Daftar
-                    </a>
+                
+                <table class="table table-borderless">
+                    <tr>
+                        <td width="200" class="fw-bold">
+                            <i class="bi bi-upc text-success"></i> Kode Anggota
+                        </td>
+                        <td>: <code>{{ $anggota->kode_anggota }}</code></td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">
+                            <i class="bi bi-envelope text-success"></i> Email
+                        </td>
+                        <td>: {{ $anggota->email }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">
+                            <i class="bi bi-telephone text-success"></i> Telepon
+                        </td>
+                        <td>: {{ $anggota->telepon }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">
+                            <i class="bi bi-geo-alt text-success"></i> Alamat
+                        </td>
+                        <td>: {{ $anggota->alamat }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">
+                            <i class="bi bi-calendar text-success"></i> Tanggal Lahir
+                        </td>
+                        <td>: {{ \Carbon\Carbon::parse($anggota->tanggal_lahir)->format('d F Y') }} ({{ \Carbon\Carbon::parse($anggota->tanggal_lahir)->age }} tahun)</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">
+                            <i class="bi bi-gender-ambiguous text-success"></i> Jenis Kelamin
+                        </td>
+                        <td>: {{ $anggota->jenis_kelamin }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">
+                            <i class="bi bi-briefcase text-success"></i> Pekerjaan
+                        </td>
+                        <td>: {{ $anggota->pekerjaan ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">
+                            <i class="bi bi-calendar-check text-success"></i> Tanggal Daftar
+                        </td>
+                        <td>: {{ \Carbon\Carbon::parse($anggota->tanggal_daftar)->format('d F Y') }} ({{ \Carbon\Carbon::parse($anggota->tanggal_daftar)->diffInDays(now()) }} hari)</td>
+                    </tr>
+                </table>
+                
+                <hr>
+                <div class="row text-muted small">
+                    <div class="col-md-6">
+                        <i class="bi bi-clock"></i> 
+                        Ditambahkan: {{ $anggota->created_at->format('d M Y H:i') }}
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <i class="bi bi-clock-history"></i> 
+                        Terakhir Update: {{ $anggota->updated_at->format('d M Y H:i') }}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0">
+                    <i class="bi bi-gear"></i> Aksi
+                </h6>
+            </div>
+            <div class="card-body d-grid gap-2">
+                <a href="{{ route('anggota.edit', $anggota->id) }}" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> Edit Anggota
+                </a>
+                <a href="{{ route('anggota.index') }}" class="btn btn-outline-success">
+                    <i class="bi bi-arrow-left"></i> Kembali
+                </a>
+                <hr>
+                <form action="{{ route('anggota.destroy', $anggota->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus?')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger w-100">
+                        <i class="bi bi-trash"></i> Hapus Anggota
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+@endsection
