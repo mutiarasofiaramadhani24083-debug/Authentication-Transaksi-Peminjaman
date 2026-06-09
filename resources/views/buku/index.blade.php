@@ -1,18 +1,26 @@
 @extends('layouts.app')
- 
+
 @section('title', 'Daftar Buku')
- 
+
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
         <i class="bi bi-book"></i>
         Daftar Buku
     </h1>
-    <a href="{{ route('buku.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Tambah Buku
-    </a>
+    <div class="d-flex gap-2">
+        {{-- Tombol Export CSV --}}
+        <a href="{{ route('buku.export') }}" class="btn btn-success">
+            <i class="bi bi-download"></i> Export CSV
+        </a>
+        
+        {{-- Tombol Tambah Buku --}}
+        <a href="{{ route('buku.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Tambah Buku
+        </a>
+    </div>
 </div>
- 
+
 {{-- Statistik Cards --}}
 <div class="row mb-4">
     <div class="col-md-4">
@@ -63,8 +71,8 @@
         </div>
     </div>
 </div>
- 
-{{-- INI BAGIAN YANG BARU: Form Advanced Search & Filter --}}
+
+{{-- Form Advanced Search & Filter --}}
 <div class="card mb-4 shadow-sm border-0 bg-light">
     <div class="card-body">
         <form action="{{ route('buku.search') }}" method="GET">
@@ -132,86 +140,97 @@
         <i class="bi bi-info-circle-fill"></i> Menampilkan hasil pencarian. Ditemukan <strong>{{ $bukus->count() }}</strong> buku.
     </div>
 @endif
- 
+
 {{-- Daftar Buku --}}
-@forelse ($bukus as $buku)
-    <div class="card mb-3">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-2 text-center">
-                    <i class="bi bi-book text-primary" style="font-size: 4rem;"></i>
-                    <div class="mt-2">
-                        <span class="badge bg-{{ $buku->kategori == 'Programming' ? 'primary' : ($buku->kategori == 'Database' ? 'success' : ($buku->kategori == 'Web Design' ? 'info' : ($buku->kategori == 'Networking' ? 'warning' : 'danger'))) }}">
-                            {{ $buku->kategori }}
-                        </span>
+{{-- Form Bulk Delete membungkus daftar buku --}}
+<form action="{{ route('buku.bulk-delete') }}" method="POST" id="form-bulk-delete">
+    @csrf
+
+    {{-- Header Bulk Action & Select All --}}
+    @if ($bukus->count() > 0)
+        <div class="d-flex justify-content-between align-items-center mb-3 bg-white p-3 shadow-sm rounded border">
+            <div class="form-check mb-0">
+                <input class="form-check-input shadow-sm" type="checkbox" id="select-all" style="transform: scale(1.2);">
+                <label class="form-check-label fw-bold ms-2 cursor-pointer" for="select-all">
+                    Pilih Semua Buku
+                </label>
+            </div>
+            <button type="button" class="btn btn-danger" id="btn-bulk-delete" disabled>
+                <i class="bi bi-trash"></i> Hapus Terpilih (<span id="count-selected">0</span>)
+            </button>
+        </div>
+    @endif
+
+    {{-- Daftar Buku --}}
+    @forelse ($bukus as $buku)
+        <div class="card mb-3 position-relative">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    
+                    {{-- Checkbox Individual --}}
+                    <div class="col-md-1 text-center border-end">
+                        <input type="checkbox" name="buku_ids[]" value="{{ $buku->id }}" class="form-check-input cb-buku shadow-sm" style="transform: scale(1.5);">
                     </div>
-                </div>
-                
-                <div class="col-md-7">
-                    <h5 class="card-title">
-                        <a href="{{ route('buku.show', $buku->id) }}" class="text-decoration-none">
-                            {{ $buku->judul }}
-                        </a>
-                    </h5>
-                    
-                    <p class="card-text text-muted mb-2">
-                        <i class="bi bi-person"></i> {{ $buku->pengarang }} | 
-                        <i class="bi bi-building"></i> {{ $buku->penerbit }} | 
-                        <i class="bi bi-calendar"></i> {{ $buku->tahun_terbit }}
-                    </p>
-                    
-                    @if ($buku->isbn)
-                        <p class="card-text small text-muted mb-1">
-                            <i class="bi bi-upc"></i> ISBN: {{ $buku->isbn }}
-                        </p>
-                    @endif
-                    
-                    @if ($buku->deskripsi)
-                        <p class="card-text">
-                            {{ Str::limit($buku->deskripsi, 150) }}
-                        </p>
-                    @endif
-                </div>
-                
-                <div class="col-md-3 text-end">
-                    <h4 class="text-primary mb-2">
-                        {{ $buku->harga_format }}
-                    </h4>
-                    
-                    <div class="mb-3">
-                        @if ($buku->stok > 0)
-                            <span class="badge bg-success">
-                                <i class="bi bi-check-circle"></i> Tersedia
+
+                    {{-- Cover/Icon --}}
+                    <div class="col-md-2 text-center">
+                        <i class="bi bi-book text-primary" style="font-size: 3rem;"></i>
+                        <div class="mt-1">
+                            <span class="badge bg-{{ $buku->kategori == 'Programming' ? 'primary' : ($buku->kategori == 'Database' ? 'success' : ($buku->kategori == 'Web Design' ? 'info' : ($buku->kategori == 'Networking' ? 'warning' : 'danger'))) }}">
+                                {{ $buku->kategori }}
                             </span>
-                            <div class="text-muted small mt-1">
-                                Stok: {{ $buku->stok }} buku
-                            </div>
-                        @else
-                            <span class="badge bg-danger">
-                                <i class="bi bi-x-circle"></i> Habis
-                            </span>
+                        </div>
+                    </div>
+                    
+                    {{-- Info Buku --}}
+                    <div class="col-md-6">
+                        <h5 class="card-title mb-1">
+                            <a href="{{ route('buku.show', $buku->id) }}" class="text-decoration-none">
+                                {{ $buku->judul }}
+                            </a>
+                        </h5>
+                        <p class="card-text text-muted mb-2 small">
+                            <i class="bi bi-person"></i> {{ $buku->pengarang }} | 
+                            <i class="bi bi-building"></i> {{ $buku->penerbit }} | 
+                            <i class="bi bi-calendar"></i> {{ $buku->tahun_terbit }}
+                        </p>
+                        @if ($buku->deskripsi)
+                            <p class="card-text small text-muted">
+                                {{ Str::limit($buku->deskripsi, 100) }}
+                            </p>
                         @endif
                     </div>
                     
-                    <div class="btn-group-vertical d-grid gap-2">
-                        <a href="{{ route('buku.show', $buku->id) }}" class="btn btn-sm btn-info text-white">
-                            <i class="bi bi-eye"></i> Detail
-                        </a>
-                        <a href="{{ route('buku.edit', $buku->id) }}" class="btn btn-sm btn-warning">
-                            <i class="bi bi-pencil"></i> Edit
-                        </a>
+                    {{-- Harga & Aksi Individual --}}
+                    <div class="col-md-3 text-end">
+                        <h5 class="text-primary mb-2">{{ $buku->harga_format }}</h5>
+                        <div class="mb-2">
+                            @if ($buku->stok > 0)
+                                <span class="badge bg-success"><i class="bi bi-check-circle"></i> Stok: {{ $buku->stok }}</span>
+                            @else
+                                <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Habis</span>
+                            @endif
+                        </div>
+                        <div class="btn-group btn-group-sm w-100">
+                            <a href="{{ route('buku.show', $buku->id) }}" class="btn btn-info text-white"><i class="bi bi-eye"></i></a>
+                            <a href="{{ route('buku.edit', $buku->id) }}" class="btn btn-warning"><i class="bi bi-pencil"></i></a>
+                            
+                            {{-- Hapus individual --}}
+                            <button type="button" class="btn btn-danger btn-delete-single" data-id="{{ $buku->id }}" data-judul="{{ $buku->judul }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-@empty
-    <div class="alert alert-warning">
-        <i class="bi bi-exclamation-triangle"></i>
-        Data buku tidak ditemukan untuk pencarian ini.
-    </div>
-@endforelse
- 
+    @empty
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> Data buku tidak ditemukan.
+        </div>
+    @endforelse
+</form>
+
 @if ($bukus->count() > 0)
     <div class="text-center mt-4">
         <p class="text-muted">
@@ -220,3 +239,108 @@
     </div>
 @endif
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // --- 1. LOGIKA BULK DELETE (SELECT ALL & CHECKBOXES) ---
+        const selectAllCb = document.getElementById('select-all');
+        const bukuCbs = document.querySelectorAll('.cb-buku');
+        const btnBulkDelete = document.getElementById('btn-bulk-delete');
+        const countSelectedSpan = document.getElementById('count-selected');
+        const formBulkDelete = document.getElementById('form-bulk-delete');
+
+        // Fungsi untuk mengupdate tombol hapus massal
+        function updateBulkButton() {
+            if(!btnBulkDelete) return;
+            const checkedCount = document.querySelectorAll('.cb-buku:checked').length;
+            countSelectedSpan.textContent = checkedCount;
+            btnBulkDelete.disabled = checkedCount === 0; // Disable jika 0
+        }
+
+        // Event listener "Select All"
+        if (selectAllCb) {
+            selectAllCb.addEventListener('change', function() {
+                bukuCbs.forEach(cb => {
+                    cb.checked = this.checked;
+                });
+                updateBulkButton();
+            });
+        }
+
+        // Event listener tiap checkbox buku
+        bukuCbs.forEach(cb => {
+            cb.addEventListener('change', function() {
+                // Uncheck "Select All" jika ada satu yg tidak dicentang
+                if (!this.checked && selectAllCb) {
+                    selectAllCb.checked = false;
+                }
+                
+                // Check "Select All" jika semua dicentang
+                const allChecked = document.querySelectorAll('.cb-buku:checked').length === bukuCbs.length;
+                if (allChecked && bukuCbs.length > 0 && selectAllCb) {
+                    selectAllCb.checked = true;
+                }
+                
+                updateBulkButton();
+            });
+        });
+
+        // SweetAlert untuk Bulk Delete (Hapus Massal)
+        if (btnBulkDelete) {
+            btnBulkDelete.addEventListener('click', function() {
+                const count = document.querySelectorAll('.cb-buku:checked').length;
+                Swal.fire({
+                    title: 'Konfirmasi Hapus Massal',
+                    text: `Apakah Anda yakin ingin menghapus ${count} buku yang dipilih?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Hapus Semua!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        formBulkDelete.submit();
+                    }
+                });
+            });
+        }
+
+        // --- 2. LOGIKA SINGLE DELETE (SweetAlert Satuan) ---
+        // Karena form sekarang dipakai untuk bulk delete, hapus satuan kita kirim via form dinamis
+        document.querySelectorAll('.btn-delete-single').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const judul = this.getAttribute('data-judul');
+                
+                Swal.fire({
+                    title: 'Konfirmasi Hapus',
+                    text: `Apakah Anda yakin ingin menghapus buku "${judul}"?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Buat form on-the-fly untuk menghapus satuan agar tidak bentrok dengan form bulk
+                        const form = document.createElement('form');
+                        form.action = `/buku/${id}`;
+                        form.method = 'POST';
+                        form.innerHTML = `
+                            @csrf
+                            @method('DELETE')
+                        `;
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            });
+        });
+
+    });
+</script>
+@endpush

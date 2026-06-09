@@ -12,8 +12,12 @@ Route::get('/', function () {
 // Tambahkan rute ini untuk Dashboard
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
  
-// 👇 TAMBAHIN ROUTE SEARCH DI SINI 👇
 Route::get('/buku/search', [BukuController::class, 'search'])->name('buku.search');
+
+Route::get('/buku/export', [BukuController::class, 'export'])->name('buku.export');
+
+Route::post('/buku/bulk-delete', [BukuController::class, 'bulkDelete'])
+     ->name('buku.bulk-delete');
 
 // Resource route untuk Buku
 Route::resource('buku', BukuController::class);
