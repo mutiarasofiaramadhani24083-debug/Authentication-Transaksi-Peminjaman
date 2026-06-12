@@ -24,7 +24,9 @@ Route::resource('buku', BukuController::class);
  
 Route::get('/buku/kategori/{kategori}', [BukuController::class, 'filterKategori'])
      ->name('buku.kategori');
- 
+
+Route::get('/anggota/export', [\App\Http\Controllers\AnggotaController::class, 'export'])->name('anggota.export');
+Route::get('/anggota/search', [\App\Http\Controllers\AnggotaController::class, 'search'])->name('anggota.search');
 Route::resource('anggota', AnggotaController::class);
 
 Route::get('/test-accessor-scope', function () {
