@@ -103,4 +103,8 @@ class Anggota extends Model
         return $query->whereMonth('created_at', Carbon::now()->month)
                      ->whereYear('created_at', Carbon::now()->year);
     }
+    public function transaksis()
+{
+    return $this->hasMany(Transaksi::class);
+}
 }
